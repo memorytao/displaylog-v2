@@ -55,11 +55,11 @@ const ContactTable = ({ data }) => {
     return (
         <>
             <div className="overflow-scroll max-h-[60vh] border-b-4 border-slate-700 rounded-md bg-[#282C34]
-      [&::-webkit-scrollbar]:w-2
-      [&::-webkit-scrollbar]:h-2
+    [&::-webkit-scrollbar]:w-2
+    [&::-webkit-scrollbar]:h-2
     [&::-webkit-scrollbar-track]:bg-slate-800
     [&::-webkit-scrollbar-thumb]:bg-slate-500
-      [&::-webkit-scrollbar-thumb]:rounded-lg">
+    [&::-webkit-scrollbar-thumb]:rounded-lg">
                 <table className="table-auto border-collapse w-full text-left text-white rounded-md border border-slate-100 overflow-hidden scroll-auto">
                     <thead className="font-mono text-md divide-slate-100">
                         <tr className=" cursor-pointer" title="Click to copy header" onClick={() => handleCopyHeader(contactFields)}>
@@ -97,9 +97,16 @@ const ContactTable = ({ data }) => {
                                                     cellIndex === 27 ? ( // STATUS column
                                                         <span className={`font-mono font-semibold ${cell === "FULS" || String(cell).toUpperCase() === "SUCCESS" ? "text-green-400" : "text-red-400"}`}>{cell}</span>
                                                     ) :
-                                                        (
-                                                            <span className="font-mono">{cell}</span>
+                                                        cellIndex === 19 ? ( // OFFER_START_TIME column
+                                                            <span className={`font-mono font-normal `}>{String(cell).slice(0, 19)}</span>
                                                         )
+                                                            :
+                                                            cellIndex === 29 ? ( // CREATED_TIME column
+                                                                <span className={`font-mono font-normal `}>{String(cell).slice(0, 19)}</span>
+                                                            ) :
+                                                                (
+                                                                    <span className="font-mono">{cell}</span>
+                                                                )
                                         }
                                     </td>
                                 ))}

@@ -16,6 +16,9 @@ function App() {
   const [isTRUE, setIsTRUE] = useState(false);
   const [isDTAC, setIsDTAC] = useState(true);
 
+  // const [start, setStart] = useState(1);
+  // const [end, setEnd] = useState(40);
+
   return (
     <>
       <header>
@@ -33,6 +36,7 @@ function App() {
                 setIsTRUE(true);
                 setIsDTAC(false);
                 setApiResponse(null);
+                setSearchParam("");
                 console.log("TRUE");
               }}
               type="button"
@@ -47,6 +51,7 @@ function App() {
                 setIsDTAC(true);
                 setIsTRUE(false);
                 setApiResponse(null);
+                setSearchParam("");
                 console.log("DTAC");
               }}
               type="button"
@@ -132,6 +137,8 @@ function App() {
               value={searchParam}
               setValue={setSearchParam}
               onApiResponse={setApiResponse}
+              // start={start ? start : 1}
+              // end={end ? end : 40}
             />
           ) : null}
         </div>
@@ -145,12 +152,24 @@ function App() {
             {apiResponse && isContactHistory && <ContactTable data={apiResponse} />}
           </div>
           {
-            <Pagination onApiResponse={setApiResponse}
-              // currentPage={currentPage}
-              // totalPages={totalPages}
-              // onPageChange={handlePageChange}
-            />}
-
+          /*   <Pagination
+              brand={isTRUE ? "TRUE" : isDTAC ? "DTAC" : ""}
+              log={
+                isResponseHistory
+                  ? "response"
+                  : isContactHistory
+                    ? "contact"
+                    : kafka
+                      ? "kafka"
+                      : ""
+              }
+              value={searchParam}
+              setValue={setSearchParam}
+              onApiResponse={setApiResponse}
+              start={setStart}
+              end={setEnd}
+            /> */
+            }
         </div>
       </section>
     </>

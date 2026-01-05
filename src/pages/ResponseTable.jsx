@@ -94,16 +94,20 @@ const ResponseTable = ({ data }) => {
                       ) :
                         cellIndex === 16 ? ( // STATUS column
                           <span className={`font-mono font-normal ${cell === "FULS" || String(cell).toUpperCase() === "SUCCESS" ? "text-green-400" : "text-red-400"}`}>{cell}</span>
-                        ) :
-                          cellIndex === 18 ? ( // ERROR_DESCRIPTION column
-                            <span className={`font-mono min-w-[300px] max-w-[500px] whitespace-normal break-words leading-relaxed ${cell.length > 0 && String(cell).toUpperCase() !== 'SUCCESS' ? "text-red-400" : ""}`}>{cell}</span>
+                        )
+                          :
+                          cellIndex === 17 ? ( // ERROR_CODE column
+                            <span className={`font-mono text-red-400 `}>{cell}</span>
                           ) :
-                            cellIndex === 29 ? ( // CREATED_TIME column
-                              <span className={`font-mono font-normal `}>{String(cell).slice(0, 19)}</span>
+                            cellIndex === 18 ? ( // ERROR_DESCRIPTION column
+                              <span className={`font-mono min-w-[300px] max-w-[500px] whitespace-normal break-words leading-relaxed ${cell.length > 0 && String(cell).toUpperCase() !== 'SUCCESS' ? "text-red-400" : ""}`}>{cell}</span>
                             ) :
-                              (
-                                <span className="font-mono">{cell}</span>
-                              )
+                              cellIndex === 29 ? ( // CREATED_TIME column
+                                <span className={`font-mono font-normal `}>{String(cell).slice(0, 19)}</span>
+                              ) :
+                                (
+                                  <span className="font-mono">{cell}</span>
+                                )
                     }
                   </td>
                 ))}
