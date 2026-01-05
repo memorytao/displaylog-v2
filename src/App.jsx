@@ -1,20 +1,20 @@
 import { useState } from "react";
 import "./App.css";
-import { FaSearch } from "react-icons/fa";
-import WelcomeMessage from "./pages/header/Welcome";
-import ResponseTable from "./pages/table/ResponseTable";
+import WelcomeMessage from "./pages/Welcome";
+import ResponseTable from "./pages/ResponseTable";
 import InputForm from "./components/InputForm";
-
-
-
+import Pagination from "./components/Pagination";
+import ContactTable from "./pages/ContactTable";
+import ExportFile from "./components/ExportFile";
 
 function App() {
-  const [isResponseHistory, setIsResponseHistory] = useState(false);
+  const [isResponseHistory, setIsResponseHistory] = useState(true);
   const [isContactHistory, setIsContactHistory] = useState(false);
   const [kafka, setKafka] = useState(false);
   const [searchParam, setSearchParam] = useState("");
+  const [apiResponse, setApiResponse] = useState(null);
   const [isTRUE, setIsTRUE] = useState(false);
-  const [isDTAC, setIsDTAC] = useState(false);
+  const [isDTAC, setIsDTAC] = useState(true);
 
   return (
     <>
@@ -25,17 +25,19 @@ function App() {
       </header>
       <section>
         <div className="grid grid-cols-1 gap-4 m-10">
-          <div className="flex flex-row gap-4 justify-center items-center">
+          <div className="flex flex-row gap-4 justify-start items-center">
+            {/* <div className="text-white size-1/12"> Brands: </div> */}
             <button
               value={isTRUE}
               onClick={() => {
                 setIsTRUE(true);
                 setIsDTAC(false);
+                setApiResponse(null);
                 console.log("TRUE");
               }}
               type="button"
-              className={`'text-gray-900 hover:bg-slate-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-red-700 dark:focus:ring-red-700' 
-                ${isTRUE ? "ring-4 ring-red-700 bg-red-400" : "bg-slate-300"}`}
+              className={`' font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-red-500 hover:bg-red-400 focus:ring-3 focus:outline-none  rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-red-700 dark:focus:ring-red-700' 
+                ${isTRUE ? "ring-4 ring-red-400 bg-red-400" : "bg-red-200"}`}
             >
               TRUE
             </button>
@@ -44,34 +46,35 @@ function App() {
               onClick={() => {
                 setIsDTAC(true);
                 setIsTRUE(false);
+                setApiResponse(null);
                 console.log("DTAC");
               }}
               type="button"
-              className={`'text-gray-900 hover:bg-slate-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-cyan-600 dark:focus:ring-cuyan-600' 
-                ${
-                  isDTAC ? "ring-4 ring-cyan-600 bg-blue-300" : " bg-slate-300"
+              className={`' font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-blue-500 hover:bg-blue-400 focus:ring-3 focus:outline-none rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-blue-700 dark:focus:ring-blue-700' 
+                ${isDTAC ? "ring-4 ring-blue-400 bg-blue-400" : " bg-blue-200"
                 }`}
             >
               DTAC
             </button>
           </div>
           {isTRUE || isDTAC ? (
-            <div className="flex flex-row gap-4 justify-center items-center">
+            <div className="flex flex-row gap-4 justify-start items-center">
+              {/* <div className="text-white size-1/12">Logs:</div> */}
               <button
                 value={isResponseHistory}
                 onClick={() => {
                   setIsResponseHistory(true);
                   setIsContactHistory(false);
                   setKafka(false);
+                  setApiResponse(null);
                   console.log("Response History");
                 }}
                 type="button"
-                className={`'text-gray-900 hover:bg-slate-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-emerald-500 dark:focus:ring-emerald-500' 
-                ${
-                  isResponseHistory
-                    ? "ring-4 ring-emerald-500 bg-green-200"
-                    : " bg-slate-300"
-                }`}
+                className={`' cursor-pointer text-gray-700 hover:bg-green-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-emerald-500 dark:focus:ring-emerald-500' 
+                ${isResponseHistory
+                    ? "ring-4 ring-emerald-500 bg-green-400"
+                    : " bg-emerald-300"
+                  }`}
               >
                 Response History
               </button>
@@ -81,15 +84,15 @@ function App() {
                   setIsContactHistory(true);
                   setIsResponseHistory(false);
                   setKafka(false);
+                  setApiResponse(null);
                   console.log("Contact History");
                 }}
                 type="button"
-                className={`'text-gray-900  hover:bg-slate-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-orange-400 dark:focus:ring-orange-400' 
-                ${
-                  isContactHistory
+                className={`' cursor-pointer text-gray-700  hover:bg-orange-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-orange-400 dark:focus:ring-orange-400' 
+                ${isContactHistory
                     ? "ring-4 ring-orange-400 bg-orange-300"
-                    : "bg-slate-300"
-                }`}
+                    : "bg-orange-300"
+                  }`}
               >
                 Contact History
               </button>
@@ -100,14 +103,17 @@ function App() {
                   setKafka(true);
                   setIsContactHistory(false);
                   setIsResponseHistory(false);
+                  setApiResponse(null);
                   console.log("Kafka");
                 }}
                 type="button"
-                className={`'text-gray-900 hover:bg-zinc-700 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-rose-400 dark:focus:ring-rose-400' 
+                className={`'text-gray-100 hover:bg-zinc-700 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-rose-400 dark:focus:ring-rose-400' 
                 ${kafka ? "ring-4 ring-rose-400" : " bg-zinc-700"}`}
               >
-                Kafka (Coming Soon)
+                Kafka
               </button>
+              <ExportFile data={apiResponse} />
+
             </div>
           ) : null}
 
@@ -118,21 +124,33 @@ function App() {
                 isResponseHistory
                   ? "response"
                   : isContactHistory
-                  ? "contact"
-                  : kafka
-                  ? "kafka"
-                  : ""
+                    ? "contact"
+                    : kafka
+                      ? "kafka"
+                      : ""
               }
               value={searchParam}
               setValue={setSearchParam}
+              onApiResponse={setApiResponse}
             />
           ) : null}
         </div>
       </section>
 
       <section>
-        <div className="justify-center items-center text-left text-white">
-          <ResponseTable />
+        <div>
+          {/* <hr className="border-t-2 border-slate-700 mx-10" /> */}
+          <div className="m-10 justify-center items-center text-left text-white">
+            {apiResponse && isResponseHistory && <ResponseTable data={apiResponse} />}
+            {apiResponse && isContactHistory && <ContactTable data={apiResponse} />}
+          </div>
+          {
+            <Pagination onApiResponse={setApiResponse}
+              // currentPage={currentPage}
+              // totalPages={totalPages}
+              // onPageChange={handlePageChange}
+            />}
+
         </div>
       </section>
     </>
