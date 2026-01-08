@@ -6,20 +6,32 @@ import { FaSpinner } from "react-icons/fa";
 
 const SEARCH = 'Search... \t (  "," for AND operation ";" for OR operation  )'
 
-const TIMEOUT_DURATION = 5000;
+const TIMEOUT_DURATION = 60000;
 
-const InputForm = ({ brand, log, value: searchParam, setValue, onApiResponse, start = 1, end = 80 }) => {
+// รับ prop setLoading เพิ่มเข้ามา
+const InputForm = ({ brand, log, value: searchParam, setValue, onApiResponse, start = 1, end = 450, setLoading }) => {
 
   const [isDisabled, setIsDisabled] = useState(false);
 
   const setDefault = () => {
     setIsDisabled(false);
+    // สั่งปิด Loading (Skeleton) เมื่อทำงานเสร็จ
+    if (setLoading) setLoading(false);
   }
 
   const submitSearch = (e) => {
     e.preventDefault();
 
+    // ย้ายการเช็คค่าว่างมาไว้ก่อน เพื่อไม่ให้ Trigger Loading ถ้าไม่มี input
+    if (searchParam.trim() === "") {
+      alert("Please enter a search term.");
+      return;
+    }
+
     setIsDisabled(true);
+    // สั่งเปิด Loading (Skeleton) ที่ App.js
+    if (setLoading) setLoading(true);
+
     console.log("brand", brand, "log:", log, "searchParam", searchParam);
 
     let body = {
@@ -29,12 +41,6 @@ const InputForm = ({ brand, log, value: searchParam, setValue, onApiResponse, st
       start: start,
       end: end,
     };
-
-    if (searchParam.trim() === "") {
-      alert("Please enter a search term.");
-      setDefault();
-      return;
-    }
 
     console.log("body req: ", body);
 
@@ -55,24 +61,25 @@ const InputForm = ({ brand, log, value: searchParam, setValue, onApiResponse, st
     })
       .then((res) => {
         clearTimeout(timeoutId);
-        setDefault();
+        // เช็ค status ก่อนแปลง json เผื่อ backend ส่ง error มา
+        if (!res.ok) {
+           throw new Error(`HTTP error! status: ${res.status}`);
+        }
         return res.json();
       })
       .then((data) => {
-        console.log("API response:", data.response.length);
-
+        console.log("API response:", data.response?.length || 0);
         onApiResponse(data);
+        setDefault(); // ปิด Loading
       })
       .catch((err) => {
-
         if (err.name === 'AbortError') {
           alert("Connection Timed Out! Please try again.");
-          setDefault();
         } else {
           console.error("API error:", err);
-          setDefault();
           alert(`Something went wrong: ${err.message}`);
         }
+        setDefault(); // ปิด Loading กรณี Error
       });
   };
 
@@ -102,7 +109,8 @@ const InputForm = ({ brand, log, value: searchParam, setValue, onApiResponse, st
             tabIndex={-1}
             aria-label="Clear input"
           >
-            <MdOutlineClear className="h-9 w-9 text-white cursor-pointer" />
+            {isDisabled ? null : <MdOutlineClear className="h-9 w-9 text-white cursor-pointer" />}
+
           </button>
         )}
       </div>

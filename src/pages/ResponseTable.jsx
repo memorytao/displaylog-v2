@@ -1,6 +1,7 @@
 import { RESPONSE_FILD } from "../constants/fields";
 
-const ResponseTable = ({ data }) => {
+// รับ prop isLoading เพิ่มเข้ามา
+const ResponseTable = ({ data, isLoading }) => {
 
   const responseFields = RESPONSE_FILD.split("|");
 
@@ -30,7 +31,6 @@ const ResponseTable = ({ data }) => {
   });
 
   const handleCopyRow = (rowData) => {
-
     // convert array to string with | separator
     const textToCopy = rowData.join("|");
 
@@ -42,7 +42,6 @@ const ResponseTable = ({ data }) => {
   };
 
   const handleCopyHeader = (headerData) => {
-
     // convert array to string with | separator
     const textToCopy = headerData.join("|");
 
@@ -73,51 +72,62 @@ const ResponseTable = ({ data }) => {
           </thead>
 
           <tbody className="divide-y divide-slate-700 text-sm">
-            {rows.map((row, rowIndex) =>
-            (
-              <tr
-                key={rowIndex}
-                onClick={() => handleCopyRow(row)}
-                className="divide-x divide-slate-700 hover:bg-slate-700/50 active:bg-slate-600 transition-colors cursor-pointer duration-150"
-                title="Click to copy"
-              >
-                {row.map((cell, cellIndex) =>
-                (
-                  <td key={cellIndex} className="px-4 py-2 whitespace-nowrap pl-7 pr-7 pt-3 pb-3" >
-                    {cellIndex === 4 ? ( // CUSTOMER_IDENTIFIER column
-                      <span className="font-mono font- bg-gradient-to-r from-amber-400 to-pink-400 bg-clip-text text-transparent">{cell}</span>
-                    ) :
-                      cellIndex === 10 ? ( // REQUESTER_APPLICATION column
-                        <span className={`font-mono ${String(cell).includes("DTAC") ? "text-cyan-400 font-semibold" : ""}`}>
-                          {cell}
-                        </span>
+            {isLoading ? (
+              // --- SKELETON LOADING STATE ---
+              [...Array(5)].map((_, i) => (
+                <tr key={`skeleton-${i}`} className="animate-pulse">
+                  {responseFields.map((_, j) => (
+                    <td key={j} className="px-4 py-4 whitespace-nowrap pl-7 pr-7">
+                      <div className="h-5 bg-slate-600/50 rounded w-full min-w-[50px]"></div>
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : rows.length > 0 ? (
+              // --- DATA STATE ---
+              rows.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  onClick={() => handleCopyRow(row)}
+                  className="divide-x divide-slate-700 hover:bg-slate-700/50 active:bg-slate-600 transition-colors cursor-pointer duration-150"
+                  title="Click to copy"
+                >
+                  {row.map((cell, cellIndex) => (
+                    <td key={cellIndex} className="px-4 py-2 whitespace-nowrap pl-7 pr-7 pt-3 pb-3" >
+                      {cellIndex === 4 ? ( // CUSTOMER_IDENTIFIER column
+                        <span className="font-mono text-lg font-normal bg-gradient-to-r from-amber-400 to-pink-400 bg-clip-text text-transparent">{cell}</span>
                       ) :
-                        cellIndex === 16 ? ( // STATUS column
-                          <span className={`font-mono font-normal ${cell === "FULS" || String(cell).toUpperCase() === "SUCCESS" ? "text-green-400" : "text-red-400"}`}>{cell}</span>
-                        )
-                          :
-                          cellIndex === 17 ? ( // ERROR_CODE column
-                            <span className={`font-mono text-red-400 `}>{cell}</span>
-                          ) :
-                            cellIndex === 18 ? ( // ERROR_DESCRIPTION column
-                              <span className={`font-mono min-w-[300px] max-w-[500px] whitespace-normal break-words leading-relaxed ${cell.length > 0 && String(cell).toUpperCase() !== 'SUCCESS' ? "text-red-400" : ""}`}>{cell}</span>
+                        cellIndex === 10 ? ( // REQUESTER_APPLICATION column
+                          <span className={`font-mono text-lg ${String(cell).includes("DTAC") ? "text-cyan-400 font-semibold" : ""}`}>
+                            {cell}
+                          </span>
+                        ) :
+                          cellIndex === 16 ? ( // STATUS column
+                            <span className={`font-mono text-lg font-normal ${cell === "FULS" || String(cell).toUpperCase() === "SUCCESS" ? "text-green-400" : "text-red-400"}`}>{cell}</span>
+                          )
+                            :
+                            cellIndex === 17 ? ( // ERROR_CODE column
+                              <span className={`font-mono text-lg text-red-400 `}>{cell}</span>
                             ) :
-                              cellIndex === 29 ? ( // CREATED_TIME column
-                                <span className={`font-mono font-normal `}>{String(cell).slice(0, 19)}</span>
+                              cellIndex === 18 ? ( // ERROR_DESCRIPTION column
+                                <span className={`font-mono text-lg min-w-[300px] max-w-[500px] whitespace-normal break-words leading-relaxed ${cell.length > 0 && String(cell).toUpperCase() !== 'SUCCESS' ? "text-red-400" : ""}`}>{cell}</span>
                               ) :
-                                (
-                                  <span className="font-mono">{cell}</span>
-                                )
-                    }
-                  </td>
-                ))}
-              </tr>
-            ))}
-
-            {rows.length === 0 && (
+                                cellIndex === 29 ? ( // CREATED_TIME column
+                                  <span className={`font-mono text-lg font-normal `}>{String(cell).slice(0, 19)}</span>
+                                ) :
+                                  (
+                                    <span className="font-mono text-lg">{cell}</span>
+                                  )
+                      }
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              // --- EMPTY STATE ---
               <tr>
                 <td colSpan={responseFields.length} className="px-4 py-8 text-center text-slate-300 font-mono text-2xl justify-center">
-                  No data available 🥹
+                  No data available
                 </td>
               </tr>
             )}

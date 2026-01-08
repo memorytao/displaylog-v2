@@ -1,6 +1,6 @@
 import { CONTACT_FIELD } from "../constants/fields";
 
-const ContactTable = ({ data }) => {
+const ContactTable = ({ data, isLoading }) => {
 
     const contactFields = CONTACT_FIELD.split("|");
     const targetKeys = ["AGW01", "AGW02", "AGW03", "AGW04"];
@@ -72,51 +72,62 @@ const ContactTable = ({ data }) => {
                     </thead>
 
                     <tbody className="divide-y divide-slate-700 text-sm">
-                        {rows.map((row, rowIndex) =>
-                        (
-                            <tr
-                                key={rowIndex}
-                                onClick={() => handleCopyRow(row)}
-                                className="divide-x divide-slate-700 hover:bg-slate-700/50 active:bg-slate-600 transition-colors cursor-pointer duration-150"
-                                title="Click to copy"
-                            >
-                                {row.map((cell, cellIndex) =>
-                                (
-                                    <td key={cellIndex} className="px-4 py-2 whitespace-nowrap pl-7 pr-7 pt-3 pb-3" >
-                                        {cellIndex === 4 ? ( // CUSTOMER_IDENTIFIER column
-                                            <span className="font-mono font- bg-gradient-to-r from-amber-400 to-pink-400 bg-clip-text text-transparent">{cell}</span>
-                                        ) :
-                                            cellIndex === 10 ? ( // REQUESTER_APPLICATION column
-                                                <span className={`font-mono ${String(cell).includes("DTAC") ? "text-cyan-400 font-semibold" : ""}`}>
-                                                    {cell}
-                                                </span>
+                        {isLoading ?
+                            // --- SKELETON LOADING STATE ---
+                            [...Array(5)].map((_, i) => (
+                                <tr key={`skeleton-${i}`} className="animate-pulse">
+                                    {contactFields.map((_, j) => (
+                                        <td key={j} className="px-4 py-4 whitespace-nowrap pl-7 pr-7">
+                                            <div className="h-5 bg-slate-600/50 rounded w-full min-w-[50px]"></div>
+                                        </td>
+                                    ))}
+                                </tr>
+                            )) : (rows.map((row, rowIndex) =>
+                            (
+                                <tr
+                                    key={rowIndex}
+                                    onClick={() => handleCopyRow(row)}
+                                    className="divide-x divide-slate-700 hover:bg-slate-700/50 active:bg-slate-600 transition-colors cursor-pointer duration-150"
+                                    title="Click to copy"
+                                >
+                                    {row.map((cell, cellIndex) =>
+                                    (
+                                        <td key={cellIndex} className="px-4 py-2 whitespace-nowrap pl-7 pr-7 pt-3 pb-3" >
+                                            {cellIndex === 4 ? ( // CUSTOMER_IDENTIFIER column
+                                                <span className="font-mono text-lg font-normal bg-gradient-to-r from-amber-400 to-pink-400 bg-clip-text text-transparent">{cell}</span>
                                             ) :
-                                                cellIndex === 23 ? ( //  MESSAGE_TO_CUSTOMER column
-                                                    <span className={`font-mono font-thin min-w-[300px] max-w-[500px] whitespace-normal break-words leading-relaxed text-yellow-300`}>{cell}</span>
+                                                cellIndex === 10 ? ( // REQUESTER_APPLICATION column
+                                                    <span className={`font-mono text-lg ${String(cell).includes("DTAC") ? "text-cyan-400 font-semibold" : ""}`}>
+                                                        {cell}
+                                                    </span>
                                                 ) :
-                                                    cellIndex === 27 ? ( // STATUS column
-                                                        <span className={`font-mono font-semibold ${cell === "FULS" || String(cell).toUpperCase() === "SUCCESS" ? "text-green-400" : "text-red-400"}`}>{cell}</span>
+                                                    cellIndex === 23 ? ( //  MESSAGE_TO_CUSTOMER column
+                                                        <span className={`font-mono text-lg font-thin min-w-[300px] max-w-[500px] whitespace-normal break-words leading-relaxed text-yellow-300`}>{cell}</span>
                                                     ) :
-                                                        cellIndex === 19 ? ( // OFFER_START_TIME column
-                                                            <span className={`font-mono font-normal `}>{String(cell).slice(0, 19)}</span>
-                                                        )
-                                                            :
-                                                            cellIndex === 29 ? ( // CREATED_TIME column
-                                                                <span className={`font-mono font-normal `}>{String(cell).slice(0, 19)}</span>
-                                                            ) :
-                                                                (
-                                                                    <span className="font-mono">{cell}</span>
-                                                                )
-                                        }
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
+                                                        cellIndex === 27 ? ( // STATUS column
+                                                            <span className={`font-mono text-lg font-semibold ${cell === "FULS" || String(cell).toUpperCase() === "SUCCESS" ? "text-green-400" : "text-red-400"}`}>{cell}</span>
+                                                        ) :
+                                                            cellIndex === 19 ? ( // OFFER_START_TIME column
+                                                                <span className={`font-mono text-lg font-normal `}>{String(cell).slice(0, 19)}</span>
+                                                            )
+                                                                :
+                                                                cellIndex === 29 ? ( // CREATED_TIME column
+                                                                    <span className={`font-mono text-lg font-normal `}>{String(cell).slice(0, 19)}</span>
+                                                                ) :
+                                                                    (
+                                                                        <span className="font-mono text-lg">{cell}</span>
+                                                                    )
+                                            }
+                                        </td>
+                                    ))}
+                                </tr>
+                            )))
+                        }
 
                         {rows.length === 0 && (
                             <tr>
                                 <td colSpan={contactFields.length} className="px-4 py-8 text-center text-slate-300 font-mono text-2xl justify-center">
-                                    No data available 🥹
+                                    No data available
                                 </td>
                             </tr>
                         )}

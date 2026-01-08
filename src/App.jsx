@@ -3,7 +3,7 @@ import "./App.css";
 import WelcomeMessage from "./pages/Welcome";
 import ResponseTable from "./pages/ResponseTable";
 import InputForm from "./components/InputForm";
-import Pagination from "./components/Pagination";
+// import Pagination from "./components/Pagination"; // เหมือนท่านเต๋า comment ไว้ ผมเลย comment ตาม
 import ContactTable from "./pages/ContactTable";
 import ExportFile from "./components/ExportFile";
 
@@ -11,10 +11,13 @@ function App() {
   const [isResponseHistory, setIsResponseHistory] = useState(true);
   const [isContactHistory, setIsContactHistory] = useState(false);
   const [kafka, setKafka] = useState(false);
+  const [isTOL, setIsTOL] = useState(false);
   const [searchParam, setSearchParam] = useState("");
   const [apiResponse, setApiResponse] = useState(null);
   const [isTRUE, setIsTRUE] = useState(false);
   const [isDTAC, setIsDTAC] = useState(true);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // const [start, setStart] = useState(1);
   // const [end, setEnd] = useState(40);
@@ -36,12 +39,13 @@ function App() {
                 setIsTRUE(true);
                 setIsDTAC(false);
                 setApiResponse(null);
+                setIsTOL(false);
                 setSearchParam("");
                 console.log("TRUE");
               }}
               type="button"
-              className={`' font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-red-500 hover:bg-red-400 focus:ring-3 focus:outline-none  rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-red-700 dark:focus:ring-red-700' 
-                ${isTRUE ? "ring-4 ring-red-400 bg-red-400" : "bg-red-200"}`}
+              className={`' transition delay-100 duration-200 ease-in-out font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-red-200 hover:bg-red-400 focus:ring-3 focus:outline-none  rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-red-400 dark:focus:ring-red-700' 
+                ${isTRUE ? "ring-4 ring-red-400 bg-red-500" : "bg-zinc-600 text-gray-400"}`}
             >
               TRUE
             </button>
@@ -51,20 +55,42 @@ function App() {
                 setIsDTAC(true);
                 setIsTRUE(false);
                 setApiResponse(null);
+                setIsTOL(false);
                 setSearchParam("");
                 console.log("DTAC");
               }}
               type="button"
-              className={`' font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-blue-500 hover:bg-blue-400 focus:ring-3 focus:outline-none rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-blue-700 dark:focus:ring-blue-700' 
-                ${isDTAC ? "ring-4 ring-blue-400 bg-blue-400" : " bg-blue-200"
+              className={`' transition delay-100 duration-200 ease-in-out font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-blue-200 hover:bg-blue-400 focus:ring-3 focus:outline-none rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-blue-400 dark:focus:ring-blue-700' 
+                ${isDTAC ? "ring-4 ring-blue-400 bg-blue-500" : "bg-zinc-600 text-gray-400"
                 }`}
             >
               DTAC
             </button>
+
+            <button
+              value={isTOL}
+              disabled={true}
+              onClick={() => {
+                setIsDTAC(false);
+                setIsTRUE(false);
+                setApiResponse(null);
+                setSearchParam("");
+                console.log("TOL");
+              }}
+              type="button"
+              className={`' transition delay-100 duration-200 ease-in-out font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-blue-200 hover:bg-blue-400 focus:ring-3 focus:outline-none rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-blue-400 dark:focus:ring-blue-700' 
+                ${isTOL ? "ring-4 ring-blue-500 bg-blue-500" : "bg-zinc-600 text-gray-400"
+                }`}
+            >
+              TOL
+            </button>
           </div>
           {isTRUE || isDTAC ? (
+
+
             <div className="flex flex-row gap-4 justify-start items-center">
-              {/* <div className="text-white size-1/12">Logs:</div> */}
+
+              {/* Response History button */}
               <button
                 value={isResponseHistory}
                 onClick={() => {
@@ -75,15 +101,16 @@ function App() {
                   console.log("Response History");
                 }}
                 type="button"
-                className={`' cursor-pointer text-gray-700 hover:bg-green-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-emerald-500 dark:focus:ring-emerald-500' 
+                className={`' transition delay-100 duration-200 ease-in-out cursor-pointer text-gray-700 hover:bg-green-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-emerald-500 dark:focus:ring-emerald-500' 
                 ${isResponseHistory
                     ? "ring-4 ring-emerald-500 bg-green-400"
-                    : " bg-emerald-300"
+                    : " bg-zinc-600 text-gray-400"
                   }`}
               >
                 Response History
               </button>
 
+              {/* Contact History button */}
               <button
                 onClick={() => {
                   setIsContactHistory(true);
@@ -93,21 +120,23 @@ function App() {
                   console.log("Contact History");
                 }}
                 type="button"
-                className={`' cursor-pointer text-gray-700  hover:bg-orange-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-orange-400 dark:focus:ring-orange-400' 
+                className={`' transition delay-100 duration-200 ease-in-out cursor-pointer text-gray-700  hover:bg-orange-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-orange-400 dark:focus:ring-orange-400' 
                 ${isContactHistory
                     ? "ring-4 ring-orange-400 bg-orange-300"
-                    : "bg-orange-300"
+                    : "bg-zinc-600 text-gray-400"
                   }`}
               >
                 Contact History
               </button>
 
+              {/* Kafka button */}
               <button
                 disabled={true}
                 onClick={() => {
                   setKafka(true);
                   setIsContactHistory(false);
                   setIsResponseHistory(false);
+                  setIsTOL(false);
                   setApiResponse(null);
                   console.log("Kafka");
                 }}
@@ -117,6 +146,8 @@ function App() {
               >
                 Kafka
               </button>
+
+              {/* Export button */}
               <ExportFile data={apiResponse} />
 
             </div>
@@ -137,8 +168,9 @@ function App() {
               value={searchParam}
               setValue={setSearchParam}
               onApiResponse={setApiResponse}
-              // start={start ? start : 1}
-              // end={end ? end : 40}
+              setLoading={setIsLoading}
+            // start={start ? start : 1}
+            // end={end ? end : 40}
             />
           ) : null}
         </div>
@@ -146,30 +178,16 @@ function App() {
 
       <section>
         <div>
-          {/* <hr className="border-t-2 border-slate-700 mx-10" /> */}
           <div className="m-10 justify-center items-center text-left text-white">
-            {apiResponse && isResponseHistory && <ResponseTable data={apiResponse} />}
-            {apiResponse && isContactHistory && <ContactTable data={apiResponse} />}
+
+            {(apiResponse || isLoading) && isResponseHistory && (
+              <ResponseTable data={apiResponse} isLoading={isLoading} />
+            )}
+
+            {(apiResponse || isLoading) && isContactHistory && (
+              <ContactTable data={apiResponse} isLoading={isLoading} />
+            )}
           </div>
-          {
-          /*   <Pagination
-              brand={isTRUE ? "TRUE" : isDTAC ? "DTAC" : ""}
-              log={
-                isResponseHistory
-                  ? "response"
-                  : isContactHistory
-                    ? "contact"
-                    : kafka
-                      ? "kafka"
-                      : ""
-              }
-              value={searchParam}
-              setValue={setSearchParam}
-              onApiResponse={setApiResponse}
-              start={setStart}
-              end={setEnd}
-            /> */
-            }
         </div>
       </section>
     </>

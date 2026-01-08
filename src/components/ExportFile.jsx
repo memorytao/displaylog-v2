@@ -64,7 +64,7 @@ const ExportFile = ({ data }) => {
     return (
         <button
             onClick={handleExport}
-            className="rounded-lg bg-rose-700 hover:bg-rose-400 text-white font-bold py-2 px-6 shadow-lg transition-colors flex items-center gap-2 hover:cursor-pointer mb-2"
+            className=" transition delay-100 duration-200 ease-in-out rounded-lg bg-rose-700 hover:bg-rose-400 text-white font-bold py-2 px-6 shadow-lg flex items-center gap-2 hover:cursor-pointer mb-2"
         >
             <FiDownload className="w-4 h-4" />
             Export CSV
