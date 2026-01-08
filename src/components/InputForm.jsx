@@ -4,7 +4,7 @@ import { API_BASE_URL } from "../constants/url";
 import { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
 
-const SEARCH = 'Search... \t (  "," for AND operation ";" for OR operation  )'
+const SEARCH = 'Search... ( "," for single search ";" for multiple search )'
 
 const TIMEOUT_DURATION = 60000;
 
