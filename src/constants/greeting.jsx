@@ -13,4 +13,5 @@ export const GREETINGS = [
     "Hey there! Hope you're having a great day 👍🏻",
     "Hi! Just popping in to say hello 👋",
     "Good to see you! What’s new with you today?",
+    "Hello World!"
 ];

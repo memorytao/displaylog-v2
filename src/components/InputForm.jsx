@@ -61,9 +61,9 @@ const InputForm = ({ brand, log, value: searchParam, setValue, onApiResponse, st
     })
       .then((res) => {
         clearTimeout(timeoutId);
-        // เช็ค status ก่อนแปลง json เผื่อ backend ส่ง error มา
+        
         if (!res.ok) {
-           throw new Error(`HTTP error! status: ${res.status}`);
+          throw new Error(`HTTP error! status: ${res.status}`);
         }
         return res.json();
       })
