@@ -1,34 +1,49 @@
 import { useState } from "react";
 import "./App.css";
+
+// Import Components
 import WelcomeMessage from "./pages/Welcome";
 import ResponseTable from "./pages/ResponseTable";
-import InputForm from "./components/InputForm";
 import ContactTable from "./pages/ContactTable";
+import InputForm from "./components/InputForm";
 import ExportFile from "./components/ExportFile";
 
+// Import Hooks
+import { useLogSearch } from "./hooks/useLogSearch";
+
 function App() {
-
-  const [selectedBrand, setSelectedBrand] = useState("DTAC"); // "TRUE", "DTAC", "TOL"
-  const [logType, setLogType] = useState("response"); // "response", "contact", "kafka"
-  
+  const [brand, setBrand] = useState("DTAC"); // "TRUE" | "DTAC"
+  const [logType, setLogType] = useState("response"); // "response" | "contact"
   const [searchParam, setSearchParam] = useState("");
-  const [apiResponse, setApiResponse] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Helper Function for chage the brand
-  const handleBrandChange = (brand) => {
-    setSelectedBrand(brand);
-    setApiResponse(null);
+  // call hook
+  const { data, isLoading, searchLogs, clearData } = useLogSearch();
+
+  const handleBrandChange = (newBrand) => {
+    setBrand(newBrand);
     setSearchParam("");
-    console.log(brand);
+    clearData();
   };
 
-  // Helper Function for log type
-  const handleLogTypeChange = (type) => {
-    setLogType(type);
-    setApiResponse(null);
-    // setKafka(false); // ไม่ต้องใช้แล้ว เพราะคุมด้วย logType ตัวเดียว
-    console.log(type);
+  const handleLogTypeChange = (newType) => {
+    setLogType(newType);
+    clearData();
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!searchParam.trim()) {
+      alert("Please enter a search term.");
+      return;
+    }
+
+    searchLogs({
+      brand,
+      log: logType,
+      value: searchParam,
+      start: 1,
+      end: 450
+    });
   };
 
   return (
@@ -38,89 +53,73 @@ function App() {
           <WelcomeMessage />
         </div>
       </header>
-      <section>
-        <div className="grid grid-cols-1 gap-4 m-10">
-          
-          {/* --- Brand Selection --- */}
-          <div className="flex flex-row gap-4 justify-start items-center">
+
+      <section className="m-10 grid grid-cols-1 gap-6">
+        {/* --- 1. Brand Selection --- */}
+        <div className="flex flex-row gap-3 justify-start items-center">
+          {["TRUE", "DTAC"].map((b) => (
             <button
-              onClick={() => handleBrandChange("TRUE")}
-              className={`transition delay-100 duration-200 ease-in-out font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-red-200 hover:bg-red-400 focus:ring-3 focus:outline-none rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-red-400 dark:focus:ring-red-700 
-                ${selectedBrand === "TRUE" ? "ring-4 ring-red-100 bg-red-500" : "bg-zinc-600 text-gray-400"}`}
+              key={b}
+              onClick={() => handleBrandChange(b)}
+              className={`transition duration-150 ease-in-out font-semibold text-gray-100 rounded-lg text-sm px-5 py-2.5 cursor-pointer
+      ${brand === b
+                  ? (b === "TRUE" ? "bg-red-500" : "bg-blue-500")
+                  : "bg-zinc-600 text-gray-400 hover:bg-zinc-500 hover:scale-110"}`}
             >
-              TRUE
+              {b}
             </button>
-            <button
-              onClick={() => handleBrandChange("DTAC")}
-              className={`transition delay-100 duration-200 ease-in-out font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-blue-200 hover:bg-blue-400 focus:ring-3 focus:outline-none rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-blue-400 dark:focus:ring-blue-700 
-                ${selectedBrand === "DTAC" ? "ring-4 ring-blue-200 bg-blue-500" : "bg-zinc-600 text-gray-400"}`}
-            >
-              DTAC
-            </button>
-            <button
-              disabled={true}
-              className={`transition delay-100 duration-200 ease-in-out font-stretch-105% cursor-pointer font-semibold text-gray-100 bg-blue-200 hover:bg-blue-400 focus:ring-3 focus:outline-none rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 focus:ring-blue-400 dark:focus:ring-blue-700 
-                ${selectedBrand === "TOL" ? "ring-4 ring-blue-500 bg-blue-500" : "bg-zinc-600 text-gray-400"}`}
-            >
-              TOL
-            </button>
+          ))}
+          <button disabled className="bg-zinc-700 text-gray-500 rounded-lg text-sm px-5 py-2.5 cursor-not-allowed">TOL</button>
+        </div>
+
+        {/* --- 2. Log Type Selection --- */}
+        <div className="flex flex-row gap-3 justify-start items-center w-full">
+          <button
+            onClick={() => handleLogTypeChange("response")}
+            className={`transition duration-200 font-medium rounded-lg text-sm px-5 py-2.5 
+      ${logType === "response" ? "bg-green-500  text-white" : "bg-zinc-600 text-gray-400 hover:bg-zinc-500 hover:scale-110 "}`}
+          >
+            Response History
+          </button>
+
+          <button
+            onClick={() => handleLogTypeChange("contact")}
+            className={`transition duration-200 font-medium rounded-lg text-sm px-5 py-2.5 
+      ${logType === "contact" ? "bg-orange-500 text-white" : "bg-zinc-600 text-gray-400 hover:bg-zinc-500 hover:scale-110"}`}
+          >
+            Contact History
+          </button>
+
+          <button disabled className="bg-zinc-700 text-gray-500 rounded-lg text-sm px-5 py-2.5 cursor-not-allowed">
+            Kafka
+          </button>
+
+          {/* ใช้ ml-auto ผลักตัวเองไปชิดขวาสุดของพื้นที่ที่เหลือ */}
+          <div className="ml-auto">
+            <ExportFile data={data} />
           </div>
 
-          {/* --- Log Type Selection & Export --- */}
-          {selectedBrand !== "TOL" && (
-            <div className="flex flex-row gap-4 justify-start items-center">
-              
-              <button
-                onClick={() => handleLogTypeChange("response")}
-                className={`transition delay-100 duration-200 ease-in-out cursor-pointer text-gray-700 hover:bg-green-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-emerald-500 dark:focus:ring-emerald-500 
-                ${logType === "response" ? "ring-4 ring-emerald-500 bg-green-400" : "bg-zinc-600 text-gray-400"}`}
-              >
-                Response History
-              </button>
-
-              <button
-                onClick={() => handleLogTypeChange("contact")}
-                className={`transition delay-100 duration-200 ease-in-out cursor-pointer text-gray-700 hover:bg-orange-200 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-orange-400 dark:focus:ring-orange-400 
-                ${logType === "contact" ? "ring-4 ring-orange-400 bg-orange-300" : "bg-zinc-600 text-gray-400"}`}
-              >
-                Contact History
-              </button>
-
-              <button
-                disabled={true}
-                className={`text-gray-100 hover:bg-zinc-700 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 focus:ring-rose-400 dark:focus:ring-rose-400 
-                ${logType === "kafka" ? "ring-4 ring-rose-400" : "bg-zinc-700"}`}
-              >
-                Kafka
-              </button>
-
-              <ExportFile data={apiResponse} />
-            </div>
-          )}
-
-          {/* --- Input Form --- */}
-          <InputForm
-            brand={selectedBrand}
-            log={logType}
-            value={searchParam}
-            setValue={setSearchParam}
-            onApiResponse={setApiResponse}
-            setLoading={setIsLoading}
-          />
         </div>
+
+        {/* --- 3. Search Form --- */}
+        <InputForm
+          value={searchParam}
+          setValue={setSearchParam}
+          onSubmit={handleSearch}
+          isLoading={isLoading}
+        />
       </section>
 
+      {/* --- 4. Table Display --- */}
       <section>
-        <div>
-          <div className="m-10 justify-center items-center text-left text-white">
-            {(apiResponse || isLoading) && logType === "response" && (
-              <ResponseTable data={apiResponse} isLoading={isLoading} />
-            )}
+        <div className="m-10 text-left text-white">
+          {(data || isLoading) && logType === "response" && (
+            <ResponseTable data={data} isLoading={isLoading} />
+          )}
 
-            {(apiResponse || isLoading) && logType === "contact" && (
-              <ContactTable data={apiResponse} isLoading={isLoading} />
-            )}
-          </div>
+          {(data || isLoading) && logType === "contact" && (
+            <ContactTable data={data} isLoading={isLoading} />
+          )}
         </div>
       </section>
     </>
