@@ -1,7 +1,7 @@
 import { FaSearch, FaSpinner } from "react-icons/fa";
 import { MdOutlineClear } from "react-icons/md";
 
-const SEARCH_PLACEHOLDER = 'Search... ( "," for single search ";" for multiple search )'
+const SEARCH_PLACEHOLDER = 'Search...'
 
 const InputForm = ({ value, setValue, onSubmit, isLoading }) => {
   return (
@@ -30,7 +30,7 @@ const InputForm = ({ value, setValue, onSubmit, isLoading }) => {
             tabIndex={-1}
             disabled={isLoading}
           >
-            <MdOutlineClear className="h-9 w-9 text-white cursor-pointer hover:text-red-400 transition" />
+            {!isLoading && <MdOutlineClear className="h-9 w-9 text-white cursor-pointer hover:text-red-400 transition" />}
           </button>
         )}
       </div>
