@@ -6,9 +6,10 @@ import { copyToClipboard } from "../utils/clipboard";
 const RESPONSE_FIELDS = RESPONSE_FIELD.split("|");
 const TARGET_KEYS = ["AGW01", "AGW02", "AGW03", "AGW04"];
 
-const ResponseTable = ({ data, isLoading }) => {
+const ResponseTable = ({ data, isLoading, filterText }) => {
 
-  const rows = useMemo(() => {
+  // transform data from server
+  const rawRows = useMemo(() => {
     const responseArray = data?.response || [];
     return responseArray.flatMap((item) => {
       return TARGET_KEYS.flatMap((key) => {
@@ -22,6 +23,22 @@ const ResponseTable = ({ data, isLoading }) => {
       });
     });
   }, [data]);
+
+  // 3. Step 2: กรองข้อมูล (Filtering) -> filteredRows
+  // ทำงานเมื่อ rawRows เปลี่ยน หรือ filterText เปลี่ยน
+  const filteredRows = useMemo(() => {
+    // ถ้าไม่มีคำค้นหา ให้คืนค่าข้อมูลดิบไปเลย
+    if (!filterText || filterText.trim() === "") {
+      return rawRows;
+    }
+
+    const lowerFilter = filterText.toLowerCase();
+
+    // วนลูปทุกแถว เช็คว่ามี cell ไหนที่มีคำค้นหาบ้าง
+    return rawRows.filter((row) =>
+      row.some((cell) => String(cell).toLowerCase().includes(lowerFilter))
+    );
+  }, [rawRows, filterText]);
 
   const handleCopyRow = (row) => {
     const selection = window.getSelection();
@@ -41,8 +58,15 @@ const ResponseTable = ({ data, isLoading }) => {
   };
 
   return (
-    <TableLayout headers={RESPONSE_FIELDS} isLoading={isLoading} isEmpty={rows.length === 0}>
-      {rows.map((row, rIdx) => (
+    <TableLayout
+      headers={RESPONSE_FIELDS}
+      isLoading={isLoading}
+      isEmpty={filteredRows.length === 0}
+    // onSort={requestSort}     
+    // sortConfig={sortConfig}
+    >
+      {/* ใช้ filteredRows (ที่ผ่านการกรองแล้ว) มาแสดงผล */}
+      {filteredRows.map((row, rIdx) => (
         <tr key={rIdx} onClick={() => handleCopyRow(row)} className="divide-x divide-slate-700 hover:bg-slate-700/50 active:bg-slate-600 transition-colors cursor-pointer duration-150">
           {row.map((cell, cIdx) => (
             <td key={cIdx} className="px-4 py-2 whitespace-nowrap pl-7 pr-7 pt-3 pb-3 border-b border-slate-700/50">

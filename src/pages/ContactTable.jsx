@@ -6,8 +6,10 @@ import { copyToClipboard } from "../utils/clipboard";
 const CONTACT_FIELDS = CONTACT_FIELD.split("|");
 const TARGET_KEYS = ["AGW01", "AGW02", "AGW03", "AGW04"];
 
-const ContactTable = ({ data, isLoading }) => {
-    const rows = useMemo(() => {
+const ContactTable = ({ data, isLoading, filterText }) => {
+
+    // transform data from server
+    const rawRows = useMemo(() => {
         const responseArray = data?.response || [];
         return responseArray.flatMap((item) => {
             return TARGET_KEYS.flatMap((key) => {
@@ -20,6 +22,18 @@ const ContactTable = ({ data, isLoading }) => {
             });
         });
     }, [data]);
+
+    // 2. กรองข้อมูล (Filtering)
+    const filteredRows = useMemo(() => {
+        if (!filterText || filterText.trim() === "") {
+            return rawRows;
+        }
+        const lowerFilter = filterText.toLowerCase();
+        return rawRows.filter((row) =>
+            row.some((cell) => String(cell).toLowerCase().includes(lowerFilter))
+        );
+    }, [rawRows, filterText]);
+
 
     const handleCopyRow = (row) => {
         const selection = window.getSelection();
@@ -38,8 +52,14 @@ const ContactTable = ({ data, isLoading }) => {
     };
 
     return (
-        <TableLayout headers={CONTACT_FIELDS} isLoading={isLoading} isEmpty={rows.length === 0}>
-            {rows.map((row, rIdx) => (
+        <TableLayout
+            headers={CONTACT_FIELDS}
+            isLoading={isLoading}
+            isEmpty={filteredRows.length === 0}
+        // onSort={requestSort}
+        // sortConfig={sortConfig}
+        >
+            {filteredRows.map((row, rIdx) => (
                 <tr key={rIdx} onClick={() => handleCopyRow(row)} className="divide-x divide-slate-700 hover:bg-slate-700/50 active:bg-slate-600 transition-colors cursor-pointer duration-150">
                     {row.map((cell, cIdx) => (
                         <td key={cIdx} className="px-4 py-2 whitespace-nowrap pl-7 pr-7 pt-3 pb-3 border-b border-slate-700/50">

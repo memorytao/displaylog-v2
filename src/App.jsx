@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import { TbAlertSquareRoundedFilled } from "react-icons/tb";
+import { FaFilter } from "react-icons/fa"; // เพิ่มไอคอน Filter (ถ้าต้องการ)
 
 // Import Components
 import WelcomeMessage from "./pages/Welcome";
@@ -17,15 +18,15 @@ import TOLContactTable from "./pages/TOLContactTable";
 import { useLogSearch } from "./hooks/useLogSearch";
 
 const BRANDS = ["DTAC", "TRUE", "TOL"];
-const PAGE_SIZE = 450;
+const PAGE_SIZE = 300;
 const HOW_TO_USE = `"," is AND operation. ";" is OR operation. \n You can use regular expression for advanced search.`;
 
 function App() {
   // --- States ---
-  const [brand, setBrand] = useState("DTAC"); // "TRUE" | "DTAC" | "TOL"
-  const [logType, setLogType] = useState("response"); // "response" | "contact"
+  const [brand, setBrand] = useState("DTAC");
+  const [logType, setLogType] = useState("response");
   const [searchParam, setSearchParam] = useState("");
-  const [filterParam, setFilterParam] = useState("");
+  const [filterParam, setFilterParam] = useState(""); // State สำหรับ Filter
   const [currentPage, setCurrentPage] = useState(1);
 
   // --- Hooks ---
@@ -35,18 +36,21 @@ function App() {
   const handleBrandChange = (newBrand) => {
     setBrand(newBrand);
     setSearchParam("");
+    setFilterParam("");
     setCurrentPage(1);
     clearData();
   };
 
   const handleLogTypeChange = (newType) => {
     setLogType(newType);
+    setFilterParam("");
     setCurrentPage(1);
     clearData();
   };
 
   const handleSearch = (e, targetPage = 1) => {
-    if (e) e.preventDefault(); // ถ้ากดปุ่ม Search ให้กัน refresh
+    if (e) e.preventDefault();
+    setFilterParam("");
 
     if (!searchParam.trim()) {
       alert("Please enter a search term.");
@@ -71,10 +75,10 @@ function App() {
 
   const onPageChange = (newPage) => {
     handleSearch(null, newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // scroll to top on page change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- Helper Components (Tooltip & LogType Buttons) ---
+  // ... (Helper Components: HowToUseTooltip, MobileLogButtons, TOLLogButtons เหมือนเดิม) ...
   const HowToUseTooltip = () => {
     return (
       <div className="relative group w-fit">
@@ -146,10 +150,9 @@ function App() {
 
       {/* --- Section 1: Filters & Search --- */}
       <section className="w-[98%] mx-auto grid grid-cols-1 gap-6">
-
         <HowToUseTooltip />
 
-        {/* 1. Brand Selection */}
+        {/* Brand Selection */}
         <div className="flex flex-row gap-3 justify-start items-center">
           {BRANDS.map((b) => (
             <button
@@ -167,20 +170,18 @@ function App() {
           ))}
         </div>
 
-        {/* 2. Log Type Selection */}
+        {/* Log Type Selection */}
         <div className="flex flex-row gap-3 justify-start items-center w-full">
           {brand !== "TOL" ? <MobileLogButtons /> : <TOLLogButtons />}
-
           <button disabled className="bg-zinc-700 text-gray-500 rounded-lg text-lg px-5 py-2.5 cursor-not-allowed opacity-50">
             Kafka
           </button>
-
           <div className="ml-auto">
             <ExportFile data={data} />
           </div>
         </div>
 
-        {/* 3. Search Form */}
+        {/* Search Form (Server Side) */}
         <InputForm
           value={searchParam}
           setValue={setSearchParam}
@@ -192,14 +193,29 @@ function App() {
       {/* --- Section 2: Table & Pagination --- */}
       <section>
 
-        <div className="w-[98%] mx-auto mb-10 mt-0.5 text-left text-white">
+        {(data?.response?.length > 0) && (
+          <div className="mt-6 w-[98%] mx-auto flex justify-end">
+            <div className="flex flex-row items-center rounded-md p-2 gap-2 bg-[#262833] h-12 w-[300px] border border-slate-600/50 focus-within:border-slate-400 transition-colors">
+              <FaFilter className="text-gray-400 text-lg ml-2" />
+              <input
+                type="text"
+                className="outline-none text-lg text-gray-300 placeholder-gray-500 bg-transparent w-full pr-2"
+                placeholder="Filter displayed data..."
+                value={filterParam}
+                onChange={(e) => setFilterParam(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
 
+        <div className="w-[98%] mx-auto mb-10 mt-4 text-left text-white">
           {(data || isLoading) && (
             <>
-              {logType === "response" && brand !== "TOL" && <ResponseTable data={data} isLoading={isLoading} />}
-              {logType === "contact" && brand !== "TOL" && <ContactTable data={data} isLoading={isLoading} />}
-              {logType === "response" && brand === "TOL" && <TOLResponseTable data={data} isLoading={isLoading} />}
-              {logType === "contact" && brand === "TOL" && <TOLContactTable data={data} isLoading={isLoading} />}
+              {/* ส่ง prop `filterText` ไปให้ทุกตาราง */}
+              {logType === "response" && brand !== "TOL" && <ResponseTable data={data} isLoading={isLoading} filterText={filterParam} />}
+              {logType === "contact" && brand !== "TOL" && <ContactTable data={data} isLoading={isLoading} filterText={filterParam} />}
+              {logType === "response" && brand === "TOL" && <TOLResponseTable data={data} isLoading={isLoading} filterText={filterParam} />}
+              {logType === "contact" && brand === "TOL" && <TOLContactTable data={data} isLoading={isLoading} filterText={filterParam} />}
             </>
           )}
 
@@ -212,7 +228,6 @@ function App() {
               isLoading={isLoading}
             />
           )}
-
         </div>
       </section>
     </>
