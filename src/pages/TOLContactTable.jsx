@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import TableLayout from "../components/common/TableLayout";
 import { TOL_CONTACT_FIELD } from "../constants/fields";
 import { copyToClipboard } from "../utils/clipboard";
@@ -7,6 +7,9 @@ const CONTACT_FIELDS = TOL_CONTACT_FIELD.split("|");
 const TARGET_KEYS = ["AGW01", "AGW02", "AGW03", "AGW04"];
 
 const TOLContactTable = ({ data, isLoading, filterText }) => {
+
+    // 1. State
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
     // transform data from server
     const rawRows = useMemo(() => {
@@ -32,6 +35,41 @@ const TOLContactTable = ({ data, isLoading, filterText }) => {
         );
     }, [rawRows, filterText]);
 
+    // 3. Sorting
+    const sortedRows = useMemo(() => {
+        let sortableItems = [...filteredRows];
+        if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                let valA = a[sortConfig.key];
+                let valB = b[sortConfig.key];
+
+                const numA = parseFloat(valA);
+                const numB = parseFloat(valB);
+
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    valA = numA;
+                    valB = numB;
+                } else {
+                    valA = String(valA).toLowerCase();
+                    valB = String(valB).toLowerCase();
+                }
+
+                if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filteredRows, sortConfig]);
+
+    const requestSort = (keyIndex) => {
+        let direction = 'asc';
+        if (sortConfig.key === keyIndex && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key: keyIndex, direction });
+    };
+
     const handleCopyRow = (row) => {
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) return;
@@ -52,11 +90,11 @@ const TOLContactTable = ({ data, isLoading, filterText }) => {
         <TableLayout
             headers={CONTACT_FIELDS}
             isLoading={isLoading}
-            isEmpty={filteredRows.length === 0}
-        // onSort={requestSort}
-        // sortConfig={sortConfig}
+            isEmpty={sortedRows.length === 0}
+            onSort={requestSort}
+            sortConfig={sortConfig}
         >
-            {filteredRows.map((row, rIdx) => (
+            {sortedRows.map((row, rIdx) => (
                 <tr key={rIdx} onClick={() => handleCopyRow(row)} className="divide-x divide-slate-700 hover:bg-slate-700/50 active:bg-slate-600 transition-colors cursor-pointer duration-150">
                     {row.map((cell, cIdx) => (
                         <td key={cIdx} className="px-4 py-2 whitespace-nowrap pl-7 pr-7 pt-3 pb-3 border-b border-slate-700/50">

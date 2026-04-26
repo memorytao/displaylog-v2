@@ -37,6 +37,7 @@ export const useLogSearch = () => {
     const clearData = () => {
         setData(null);
         setError(null);
+        setIsLoading(false);
     };
 
     return { data, isLoading, error, searchLogs, clearData };
